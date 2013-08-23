@@ -1,0 +1,10 @@
+Changes from version to version:
+
+[ 1.2 -> 1.3 ]
+Added some bug fixes that made the benchmarking work not-too-well with 
+Lispworks.
+
+[ 1.x -> 1.5 ]
+
+Made re-ergistering a hash tuple slightly less fragile (as long as test
+function and hash function are EQL, no error is thrown).
