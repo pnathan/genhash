@@ -6,18 +6,21 @@ public domain.
 Written by Ingvar Mattsson <ingvar@hexapodia.net>.
 
 This package defines four generic functions and two normal functions.
-The non-generic function MAKE-GENERIC-HASHTABLE is used for
+The non-generic function MAKE-GENERIC-HASH-TABLE is used for
 hash table creation.
 	(make-generic-hashtable (:test 'eql) (:size 17))
     If this function is fed the *symbols* EQ EQL EQUAL or EQUALP as test
-    it will create a generic hash table with taht as an equality test
-    and SXHASH as the hash function.
+    it will create a generic hash table with that as an equality test
+    and SXHASH as the hash function. NOTE: Using EQ or EQL as the test
+    designator is risky and should be avoided. In general, for the
+    built-in test designators, use the function instead of the
+    symbol. This will give you a built-in hash table.
 
     If this function is fed the *functions* EQ EQL EQUAL or EQUALP
     it will create a normal (built-in) hash table with that as a test
     function.
 
-	(register-hash-function <nickname> <hash fn> <equal fn>)
+	(register-test-designator <nickname> <hash fn> <equal fn>)
     Register a new generic hash function with <nickname> as the
     relevant :test parameter.
 

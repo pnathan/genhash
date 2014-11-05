@@ -1,5 +1,14 @@
 Changes from version to version:
 
+[ 1.6 -> 1.7 ]
+Fixed some bugs due to the renaming. Added backwards compatibility glue
+(specifically, MAKE_GENERIC-HASHTABLE now calls MAKE-GENERIC-HASH-TABLE
+and REGISTER-HASH-FUNCTION now calls REGISTER-TEST-DESIGNATOR)
+
+[ 1.3 -> 1.6 ]
+Many, small, changes. Two large (name-changes in the API). All spurred
+by submitting GENHASH as a Common Lisp Document Repository document.
+
 [ 1.2 -> 1.3 ]
 Added some bug fixes that made the benchmarking work not-too-well with 
 Lispworks.

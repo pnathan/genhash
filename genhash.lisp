@@ -18,13 +18,13 @@
    (hash-function :reader hash-function :initarg :hash-function)
    (eq-test :reader eq-test :initarg :eq-test)
    (builtin :reader builtin :initarg :builtin :initform nil)))
-
+   
 
 (defclass hash-container ()
   ((buckets :accessor buckets :initarg :buckets)
    (allocated-buckets :accessor allocated-buckets :initarg :allocated-buckets)
    (used-buckets :accessor used-buckets :initform 0)
-   (stored-items :accessor stored-items :initarg :stored-items)
+   (stored-items :accessor stored-items :initarg :stored-items) 
    (test-designator :reader test-designator :initarg :test-designator)))
 
 
@@ -32,33 +32,39 @@
   (when (gethash test-designator *hash-test-designator-map*)
     (let ((hashfun (gethash test-designator *hash-test-designator-map*)))
       (unless (and (eql hash-function (hash-function hashfun))
-                   (eql equal-function (eq-test hashfun)))
-        (error 'hash-exists :format-arguments (list test-designator)))))
-
+		   (eql equal-function (eq-test hashfun)))
+	(error 'hash-exists :format-arguments (list test-designator)))))
+  
   (let ((hash-foo (make-instance 'hash-test-designator
-                                 :test-designator test-designator
-                                 :hash-function hash-function
-                                 :eq-test equal-function)))
+				 :test-designator test-designator
+				 :hash-function hash-function
+				 :eq-test equal-function)))
     (setf (gethash test-designator *hash-test-designator-map*) hash-foo)))
+(defun register-hash-function (test-designator hash-function equal-function)
+  (register-test-designator test-designator hash-function equal-function))
+
 
 (defun register-builtin (test-designator)
   (setf (gethash test-designator *hash-test-designator-map*)
-        (make-instance 'hash-test-designator :builtin t)))
+	(make-instance 'hash-test-designator :builtin t)))
 
 (defun make-generic-hash-table (&key (size 17) (test 'eql))
   (let ((test-designator test))
     (let ((nick (gethash test-designator *hash-test-designator-map*)))
       (unless nick
-        (error 'unknown-hash :format-arguments (list test-designator)))
-
+	(error 'unknown-hash :format-arguments (list test-designator)))
+      
       (if (builtin nick)
-          (make-hash-table :test test-designator :size size)
-        (let ((storage (make-array (list size) :initial-element nil)))
-          (make-instance 'hash-container
-                         :buckets storage
+	  (make-hash-table :test test-designator :size size) 
+	(let ((storage (make-array (list size) :initial-element nil)))
+	  (make-instance 'hash-container
+			 :buckets storage
                          :stored-items 0
-                         :allocated-buckets size
-                         :test-designator test-designator))))))
+			 :allocated-buckets size
+			 :test-designator test-designator))))))
+
+(defun make-generic-hashtable (&key (size 17) (test 'eql))
+  (make-generic-hash-table :size size :test test))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Add, get and remove values
@@ -71,14 +77,14 @@
 
 (defun expand-hash-table (table)
   (let* ((new-size (1+ (* 2 (allocated-buckets table))))
-         (new-buckets (make-array (list new-size) :initial-element nil)))
+	 (new-buckets (make-array (list new-size) :initial-element nil)))
     (let ((old-data (buckets table)))
       (setf (allocated-buckets table) new-size)
       (setf (used-buckets table) 0)
       (setf (buckets table) new-buckets)
       (loop for bucket across old-data
-            do (loop for chunk in bucket
-                     do (setf (hashref (car chunk) table) (cdr chunk))))))
+	    do (loop for chunk in bucket
+		     do (setf (hashref (car chunk) table) (cdr chunk))))))
   table)
 
 
@@ -86,16 +92,16 @@
   (let ((hash-type (gethash (test-designator table) *hash-test-designator-map*)))
     (let ((hash (funcall (hash-function hash-type) key)))
       (let ((bucket
-             (aref (buckets table) (mod hash (allocated-buckets table)))))
-        (let ((data default) found (eqfun (eq-test hash-type)))
-          (flet ((check (chunk)
-                   (when (funcall eqfun (car chunk) key)
-                     (setf data (cdr chunk))
-                     (setf found t))))
-            (loop for chunk in bucket
-                  until found
-                  do (check chunk))
-            (values data found)))))))
+	     (aref (buckets table) (mod hash (allocated-buckets table)))))
+	(let ((data default) found (eqfun (eq-test hash-type)))
+	  (flet ((check (chunk)
+		   (when (funcall eqfun (car chunk) key)
+		     (setf data (cdr chunk))
+		     (setf found t))))
+	    (loop for chunk in bucket
+		  until found
+		  do (check chunk))
+	    (values data found)))))))
 
 (defmethod hashref (key (table hash-table) &optional default)
   (gethash key table default))
@@ -105,28 +111,28 @@
   (declare (ignore def))
   (let ((container (gethash (test-designator table) *hash-test-designator-map*)))
     (if (= (allocated-buckets table) (used-buckets table))
-        (expand-hash-table table))
+	(expand-hash-table table))
 
     (let ((hash (funcall (hash-function container) key))
-          (buckets (buckets table))
-          (size (allocated-buckets table)))
+	  (buckets (buckets table))
+	  (size (allocated-buckets table)))
       (let* ((bucket-ix (mod hash size))
-             (bucket (aref buckets bucket-ix)))
-        (if (null (aref buckets bucket-ix))
-            (progn
-              (setf (aref buckets bucket-ix)
-                    (cons (cons key value) bucket))
-              (incf (used-buckets table))
-              (incf (stored-items table)))
-          (let ((check
-                 (member key bucket
-                         :key #'car :test (eq-test container))))
-            (if check
-                (setf (cdr (car check)) value)
-              (progn
-                (setf (aref buckets bucket-ix)
-                    (cons (cons key value) bucket))
-                (incf (stored-items table)))))))))
+	     (bucket (aref buckets bucket-ix)))
+	(if (null (aref buckets bucket-ix))
+	    (progn
+	      (setf (aref buckets bucket-ix)
+		    (cons (cons key value) bucket))
+	      (incf (used-buckets table))
+	      (incf (stored-items table)))
+	  (let ((check
+		 (member key bucket
+			 :key #'car :test (eq-test container))))
+	    (if check
+		(setf (cdr (car check)) value)
+	      (progn
+		(setf (aref buckets bucket-ix)
+		    (cons (cons key value) bucket))
+		(incf (stored-items table)))))))))
   value)
 
 (defmethod (setf hashref) (value key (table hash-table) &optional default)
@@ -138,15 +144,15 @@
   (when (hashref key table nil)
     (let ((container (gethash (test-designator table) *hash-test-designator-map*)))
       (let ((hash (funcall (hash-function container) key))
-            (buckets (buckets table))
-            (size (allocated-buckets table)))
-        (let* ((bucket-ix (mod hash size))
-               (bucket (aref buckets bucket-ix)))
-          (setf (aref buckets bucket-ix)
-                (delete key bucket :test (eq-test container) :key 'car))
-          (unless (aref buckets bucket-ix)
-            (decf (used-buckets table)))
-          (decf (stored-items table)))))
+	    (buckets (buckets table))
+	    (size (allocated-buckets table)))
+	(let* ((bucket-ix (mod hash size))
+	       (bucket (aref buckets bucket-ix)))
+	  (setf (aref buckets bucket-ix)
+		(delete key bucket :test (eq-test container) :key 'car))
+	  (unless (aref buckets bucket-ix)
+	    (decf (used-buckets table)))
+	  (decf (stored-items table)))))
     t))
 
 (defmethod hashrem (key (table hash-table))
@@ -156,7 +162,7 @@
 (defmethod hashclr ((table hash-container))
   (setf (used-buckets table) 0)
   (loop for ix from 0 below (allocated-buckets table)
-        do (setf (aref (buckets table) ix) nil))
+	do (setf (aref (buckets table) ix) nil))
   table)
 
 (defmethod hashclr ((table hash-table))
@@ -167,33 +173,33 @@
 
 (defmethod all-hash-keys ((table hash-container))
   (loop for list across (buckets table)
-        append (mapcar #'car list)))
+	append (mapcar #'car list)))
 (defmethod all-hash-keys ((table hash-table))
   (loop for key being the hash-keys of table
-        collect key))
+	collect key))
 
 (defmethod hashmap (fn (table hash-container))
   (let ((buckets (buckets table)))
     (loop for bucket across buckets
-       do (loop for chunk in bucket
-                   do (funcall fn (car chunk) (cdr chunk))))))
+	  do (loop for chunk in bucket
+		   do (funcall fn (car chunk) (cdr chunk))))))
 
 (defmethod hashmap (fn (table hash-table))
   (maphash fn table))
 
 (defmacro with-generic-hash-table-iterator ((name table) &body body)
   (let ((table-des (gensym "TABLE"))
-        (the-keys (gensym "KEYS")))
+	(the-keys (gensym "KEYS")))
     `(let ((,table-des ,table))
        (let ((,the-keys (all-hash-keys ,table-des)))
-         (macrolet ((,name ()
-                     `(when ,the-keys
-                          (prog1
-                              (values t
-                                      (car ,the-keys)
-                                      (hashref (car ,the-keys) ,table-des))
-                            (setf ,the-keys (cdr ,the-keys))))))
-           ,@body)))))
+	 (macrolet ((,name ()
+		     `(when ,the-keys
+			  (prog1
+			      (values t
+				      (car ,the-keys)
+				      (hashref (car ,the-keys) ,table-des))
+			    (setf ,the-keys (cdr ,the-keys))))))
+	   ,@body)))))
 
 
 ;;;;;;;;;;;;;;;;
@@ -236,3 +242,4 @@
   (register-builtin #'eql)
   (register-builtin #'equal)
   (register-builtin #'equalp))
+
