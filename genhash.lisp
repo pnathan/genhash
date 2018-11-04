@@ -33,7 +33,12 @@
     (let ((hashfun (gethash test-designator *hash-test-designator-map*)))
       (unless (and (eql hash-function (hash-function hashfun))
 		   (eql equal-function (eq-test hashfun)))
-	(error 'hash-exists :format-arguments (list test-designator)))))
+	(restart-case
+	    (error 'hash-exists :format-arguments (list test-designator))
+	  (:unregister-and-retry ()
+	   :report "Unregister hash table type and retry"
+	    (remhash test-designator *hash-test-designator-map*)
+	    (register-test-designator test-designator hash-function equal-function))))))
   
   (let ((hash-foo (make-instance 'hash-test-designator
 				 :test-designator test-designator
