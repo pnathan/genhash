@@ -1,5 +1,7 @@
 Changes from version to version:
 
+Provide an unregister and retry restart on a HASH-EXISTS condition.
+
 [ 1.6 -> 1.7 ]
 Fixed some bugs due to the renaming. Added backwards compatibility glue
 (specifically, MAKE_GENERIC-HASHTABLE now calls MAKE-GENERIC-HASH-TABLE
