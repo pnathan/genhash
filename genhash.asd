@@ -1,6 +1,6 @@
 (asdf:defsystem "genhash"
   :description "Generic hashtable code"
-  :version "1.7"
+  :version "1.8"
   :licence "Public Domain"
   :author "Ingvar Mattsson <ingvar@hexapodia.net>"
   :maintainer "Paul Nathan <pnathan@alumni.uidaho.edu>"
