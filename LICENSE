@@ -1,0 +1,20 @@
+genhash is in the public domain.
+
+The project README states the dedication in the author's own words:
+
+    NET.HEXAPODIA.HASHTABLES
+
+    Generic hash table implementation. This implementation is in the
+    public domain.
+
+    Written by Ingvar Mattsson <ingvar@hexapodia.net>.
+
+The system definition in genhash.asd records the same terms:
+
+    :licence   "Public Domain"
+    :author    "Ingvar Mattsson <ingvar@hexapodia.net>"
+    :maintainer "Paul Nathan <pnathan@alumni.uidaho.edu>"
+
+This file exists so the dedication is visible at the root of the
+repository. It restates the author's declaration and does not add,
+remove, or alter any terms. No party claims copyright over this work.
